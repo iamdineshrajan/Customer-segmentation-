@@ -1,0 +1,123 @@
+---
+title: "Capstone project"
+author: "Dinesh Rajan R A"
+date: "01/05/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+####################################### Implementation #######################################
+
+# > Understand kmeans clustering.
+# > Understand retail Data for applying kmeans clustering.
+# > Understand the objective.
+# > Maths of kmeans clustering.
+# > understand Optimum number of cluster.
+# > Using elbow method to determine the optimal number of cluster.
+# > model fitting
+# > Evaluation
+
+# > Objective
+
+# The client is a leading Fashion retailer in Australia. Company runs a display advertising campaign for this brand, where it shows ads to users leading them to make a purchase on the brands website.The given dataset is the Sales data for all users who made a purchase online in the first half of October '17.
+
+# Based on your analysis, arrive at a statistical segmentation of the brands audience based 
+# on Revenue. The number of segments is up to you. Please provide definitions of each groups
+
+# > desired Library installation
+
+```{r}
+# install.packages("factoextra")
+# install.packages("rpivotTable")
+# install.packages("cluster")
+# install.packages("fpc")
+# install.packages("factoextra")
+# install.packages("rpivotTable")
+# install.packages("ggplot2")
+# install.packages("dplyr")
+# install.packages("magrittr")
+```
+
+
+```{r include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(magrittr)
+library(cluster)
+library(fpc)
+library(factoextra)
+library(rpivotTable)
+```
+
+# > Setting working directory
+
+```{r}
+getwd()
+
+path = "C:/Users/DELL/Downloads/Capston Project 1"
+#setwd(path)
+```
+
+# > reading data
+
+```{r}
+revenue = read.csv('RevenueCluster.csv',header = TRUE)
+head(revenue,10)
+```
+
+# > subsetting/manipulating data to fit kmeans clustering
+
+```{r}
+D = subset(revenue,select = 5)
+head(D,10)
+```
+
+# > fitting basic model taking a random number of cluster say "3"
+
+```{r}
+set.seed(100)
+basicmodel = kmeans(D,3)
+basicmodel$tot.withinss
+basiccluster = basicmodel$cluster
+head(basiccluster)
+```
+
+# > calculating optimum number cluster
+
+```{r}
+optimcluster <- function(k){
+  cluster <- kmeans(D, k)
+  return(cluster$tot.withinss)
+}
+
+wss <- sapply(1:20, optimcluster)
+
+optimK <- data.frame(k = 1:20, wss)
+head(optimK)
+```
+
+Interpretation: The method consists of plotting the explained variation as a function of the number of clusters, and picking the elbow of the curve as the number of clusters to use.
+
+### ploting the k value from 1 to 20 against within sum of square (wss)
+
+```{r}
+ggplot(data = optimK) + aes(x=k, y= wss) + geom_point() + geom_line()+
+  scale_x_continuous(breaks = seq(1,20,by = 1))
+
+OptimunCluster <- "Enter a number which is optimum for Analysis"
+```
+
+# > Model fitting using optimum k
+
+```{r}
+model = kmeans(D,3)
+cluster = model$cluster
+```
+
+
+```{r}
+mapping = data.frame(revenue = D, cluster = cluster)
+write.csv(mapping,'mapping.csv')
+```
+
